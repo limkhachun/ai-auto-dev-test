@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Orders</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="{{ url_for('shop.index') }}" class="nav-brand">Online Store</a>
+            <div class="nav-links">
+                <a href="{{ url_for('shop.index') }}" class="nav-link">Shop</a>
+                <a href="{{ url_for('shop.cart') }}" class="nav-link">Cart</a>
+                <a href="{{ url_for('shop.my_orders') }}" class="nav-link active">My Orders</a>
+                <a href="{{ url_for('auth.logout') }}" class="nav-link">Logout</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="main-container">
+        <h1 class="page-title">My Orders</h1>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        {% if orders %}
+            {% for order in orders %}
+                <div class="order-card">
+                    <div class="order-header">
+                        <span class="order-id">Order #{{ order.id }}</span>
+                        <span class="order-status status-{{ order.status }}">{{ order.status }}</span>
+                        <span class="order-date">{{ order.created_at.strftime('%Y-%m-%d %H:%M') }}</span>
+                        <span class="order-total">Total: ${{ '%.2f'|format(order.total_amount) }}</span>
+                    </div>
+                    <div class="order-items">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Product</th>
+                                    <th>Price</th>
+                                    <th>Quantity</th>
+                                    <th>Subtotal</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in order.items.all() %}
+                                    <tr>
+                                        <td>{{ item.product.name if item.product else 'N/A' }}</td>
+                                        <td>${{ '%.2f'|format(item.price) }}</td>
+                                        <td>{{ item.quantity }}</td>
+                                        <td>${{ '%.2f'|format(item.price * item.quantity) }}</td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            {% endfor %}
+        {% else %}
+            <div class="empty-state">
+                <p>You haven't placed any orders yet.</p>
+                <a href="{{ url_for('shop.index') }}" class="btn btn-primary">Start Shopping</a>
+            </div>
+        {% endif %}
+    </div>
+
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+</body>
+</html>

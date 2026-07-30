@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Staff Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="{{ url_for('staff.staff_dashboard') }}" class="nav-brand">Staff Panel</a>
+            <div class="nav-links">
+                <a href="{{ url_for('staff.staff_dashboard') }}" class="nav-link active">Dashboard</a>
+                <a href="{{ url_for('staff.staff_orders') }}" class="nav-link">All Orders</a>
+                {% if session.get('role') == 'superadmin' %}
+                    <a href="{{ url_for('admin.admin_dashboard') }}" class="nav-link">Admin Panel</a>
+                {% endif %}
+                <a href="{{ url_for('auth.logout') }}" class="nav-link">Logout</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="main-container">
+        <h1 class="page-title">Staff Dashboard</h1>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <!-- Inventory Management -->
+        <div class="section">
+            <h2 class="section-title">Inventory Management</h2>
+
+            <!-- Add Product Form -->
+            <div class="card">
+                <h3>Add New Product</h3>
+                <form method="POST" action="{{ url_for('staff.add_product') }}" class="inline-form product-form">
+                    <input type="text" name="name" placeholder="Product Name" required>
+                    <input type="text" name="description" placeholder="Description">
+                    <input type="number" name="price" placeholder="Price" step="0.01" min="0" required>
+                    <input type="number" name="stock" placeholder="Stock" min="0" required>
+                    <button type="submit" class="btn btn-primary btn-sm">Add Product</button>
+                </form>
+            </div>
+
+            <!-- Product Table -->
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Name</th>
+                        <th>Description</th>
+                        <th>Price</th>
+                        <th>Stock</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for product in products %}
+                        <tr>
+                            <td>{{ product.id }}</td>
+                            <td>{{ product.name }}</td>
+                            <td>{{ product.description or '-' }}</td>
+                            <td>${{ '%.2f'|format(product.price) }}</td>
+                            <td>{{ product.stock }}</td>
+                            <td>
+                                <!-- Edit Form -->
+                                <form method="POST" action="{{ url_for('staff.edit_product', product_id=product.id) }}" class="inline-form edit-form">
+                                    <input type="text" name="name" value="{{ product.name }}" required>
+                                    <input type="text" name="description" value="{{ product.description or '' }}">
+                                    <input type="number" name="price" value="{{ product.price }}" step="0.01" min="0" required>
+                                    <input type="number" name="stock" value="{{ product.stock }}" min="0" required>
+                                    <button type="submit" class="btn btn-sm btn-secondary">Save</button>
+                                </form>
+                                <!-- Delete Form -->
+                                <form method="POST" action="{{ url_for('staff.delete_product', product_id=product.id) }}" class="inline-form">
+                                    <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Delete this product?')">Delete</button>
+                                </form>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pending Orders -->
+        <div class="section">
+            <h2 class="section-title">Pending Orders (Paid)</h2>
+            {% if pending_orders %}
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Order ID</th>
+                            <th>User ID</th>
+                            <th>Total</th>
+                            <th>Date</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for order in pending_orders %}
+                            <tr>
+                                <td>#{{ order.id }}</td>
+                                <td>{{ order.user_id }}</td>
+                                <td>${{ '%.2f'|format(order.total_amount) }}</td>
+                                <td>{{ order.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                                <td>
+                                    <form method="POST" action="{{ url_for('staff.ship_order', order_id=order.id) }}">
+                                        <button type="submit" class="btn btn-sm btn-primary" onclick="return confirm('Mark order #{{ order.id }} as shipped?')">Ship</button>
+                                    </form>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% else %}
+                <p>No pending orders.</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+</body>
+</html>

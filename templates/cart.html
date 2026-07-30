@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shopping Cart</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="{{ url_for('shop.index') }}" class="nav-brand">Online Store</a>
+            <div class="nav-links">
+                <a href="{{ url_for('shop.index') }}" class="nav-link">Shop</a>
+                <a href="{{ url_for('shop.cart') }}" class="nav-link active">Cart</a>
+                <a href="{{ url_for('shop.my_orders') }}" class="nav-link">My Orders</a>
+                <a href="{{ url_for('auth.logout') }}" class="nav-link">Logout</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="main-container">
+        <h1 class="page-title">Shopping Cart</h1>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        {% if cart %}
+            <table class="table cart-table">
+                <thead>
+                    <tr>
+                        <th>Product</th>
+                        <th>Price</th>
+                        <th>Quantity</th>
+                        <th>Subtotal</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for pid, item in cart.items() %}
+                        <tr>
+                            <td>{{ item.name }}</td>
+                            <td>${{ '%.2f'|format(item.price) }}</td>
+                            <td>
+                                <form method="POST" action="{{ url_for('shop.update_cart') }}" class="inline-form">
+                                    <input type="hidden" name="product_id" value="{{ pid }}">
+                                    <input type="number" name="quantity" value="{{ item.quantity }}" min="0" max="{{ item.max_stock }}" class="qty-input">
+                                    <button type="submit" class="btn btn-sm btn-secondary">Update</button>
+                                </form>
+                            </td>
+                            <td>${{ '%.2f'|format(item.price * item.quantity) }}</td>
+                            <td>
+                                <form method="POST" action="{{ url_for('shop.remove_from_cart') }}" class="inline-form">
+                                    <input type="hidden" name="product_id" value="{{ pid }}">
+                                    <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Remove this item?')">Remove</button>
+                                </form>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+                <tfoot>
+                    <tr>
+                        <td colspan="3" class="text-right"><strong>Total:</strong></td>
+                        <td><strong>${{ '%.2f'|format(total) }}</strong></td>
+                        <td></td>
+                    </tr>
+                </tfoot>
+            </table>
+
+            <form method="POST" action="{{ url_for('shop.checkout') }}" class="checkout-form">
+                <button type="submit" class="btn btn-primary btn-lg" onclick="return confirm('Proceed to checkout?')">Place Order & Pay</button>
+            </form>
+        {% else %}
+            <div class="empty-state">
+                <p>Your cart is empty.</p>
+                <a href="{{ url_for('shop.index') }}" class="btn btn-primary">Continue Shopping</a>
+            </div>
+        {% endif %}
+    </div>
+
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+</body>
+</html>
