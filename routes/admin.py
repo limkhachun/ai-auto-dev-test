@@ -6,6 +6,7 @@ from flask import Blueprint, render_template, request, redirect, url_for, flash,
 from models import db, User, Product, Order, OrderItem, AuditLog
 from decorators import role_required
 from datetime import datetime
+from sqlalchemy.orm import joinedload
 
 admin_bp = Blueprint('admin', __name__, template_folder='../templates')
 
@@ -36,7 +37,9 @@ def admin_dashboard():
     products = Product.query.order_by(Product.created_at.desc()).all()
     orders = Order.query.order_by(Order.created_at.desc()).all()
     staffs = User.query.filter_by(role='staff').order_by(User.created_at.desc()).all()
-    audit_logs = AuditLog.query.order_by(AuditLog.created_at.desc()).all()
+    audit_logs = AuditLog.query.options(
+        joinedload(AuditLog.staff)
+    ).order_by(AuditLog.created_at.desc()).all()
     return render_template(
         'admin_dashboard.html',
         products=products,
@@ -126,14 +129,6 @@ def delete_product(product_id):
 # Order Management
 # ============================================================
 
-@admin_bp.route('/admin/orders')
-@role_required('superadmin')
-def admin_orders():
-    """View all orders."""
-    orders = Order.query.order_by(Order.created_at.desc()).all()
-    return render_template('admin_orders.html', orders=orders)
-
-
 @admin_bp.route('/admin/orders/ship/<int:order_id>', methods=['POST'])
 @role_required('superadmin')
 def ship_order(order_id):
@@ -159,10 +154,13 @@ def ship_order(order_id):
 @admin_bp.route('/admin/staff/add', methods=['POST'])
 @role_required('superadmin')
 def add_staff():
-    """Register a new staff account (with audit log)."""
+    """Register a new staff account (with audit log).
+    Includes password confirmation double-check.
+    """
     username = request.form.get('username', '').strip()
     email = request.form.get('email', '').strip().lower()
     password = request.form.get('password', '')
+    confirm_password = request.form.get('confirm_password', '')
 
     # Validation
     errors = []
@@ -170,8 +168,10 @@ def add_staff():
         errors.append('Username must be at least 3 characters.')
     if not email or '@' not in email:
         errors.append('Please provide a valid email address.')
-    if len(password) < 6:
-        errors.append('Password must be at least 6 characters.')
+    if len(password) < 8:
+        errors.append('Password must be at least 8 characters.')
+    if password != confirm_password:
+        errors.append('Password and confirm password do not match.')
     if User.query.filter_by(username=username).first():
         errors.append('Username is already taken.')
     if User.query.filter_by(email=email).first():

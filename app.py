@@ -1,8 +1,8 @@
 """
 Super Admin Dashboard — Flask Application Entry Point.
 """
-import os
 from flask import Flask, render_template
+from flask_wtf.csrf import CSRFProtect
 from config import Config
 from models import db
 
@@ -20,6 +20,9 @@ def create_app(config_class=Config):
 
     # Init database
     db.init_app(app)
+
+    # Init CSRF protection — validates tokens for all POST/PUT/DELETE requests
+    csrf = CSRFProtect(app)
 
     # Register blueprints
     app.register_blueprint(auth_bp)

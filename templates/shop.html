@@ -46,6 +46,7 @@
                         <p class="product-stock">Stock: {{ product.stock }}</p>
                         {% if product.stock > 0 %}
                             <form method="POST" action="{{ url_for('shop.add_to_cart') }}" class="add-to-cart-form">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                 <input type="hidden" name="product_id" value="{{ product.id }}">
                                 <div class="quantity-control">
                                     <input type="number" name="quantity" value="1" min="1" max="{{ product.stock }}" class="qty-input">

@@ -40,6 +40,7 @@
             <div class="card">
                 <h3>Add New Product</h3>
                 <form method="POST" action="{{ url_for('staff.add_product') }}" class="inline-form product-form">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                     <input type="text" name="name" placeholder="Product Name" required>
                     <input type="text" name="description" placeholder="Description">
                     <input type="number" name="price" placeholder="Price" step="0.01" min="0" required>
@@ -71,6 +72,7 @@
                             <td>
                                 <!-- Edit Form -->
                                 <form method="POST" action="{{ url_for('staff.edit_product', product_id=product.id) }}" class="inline-form edit-form">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                     <input type="text" name="name" value="{{ product.name }}" required>
                                     <input type="text" name="description" value="{{ product.description or '' }}">
                                     <input type="number" name="price" value="{{ product.price }}" step="0.01" min="0" required>
@@ -79,6 +81,7 @@
                                 </form>
                                 <!-- Delete Form -->
                                 <form method="POST" action="{{ url_for('staff.delete_product', product_id=product.id) }}" class="inline-form">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                     <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Delete this product?')">Delete</button>
                                 </form>
                             </td>
@@ -111,6 +114,7 @@
                                 <td>{{ order.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
                                 <td>
                                     <form method="POST" action="{{ url_for('staff.ship_order', order_id=order.id) }}">
+                                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                         <button type="submit" class="btn btn-sm btn-primary" onclick="return confirm('Mark order #{{ order.id }} as shipped?')">Ship</button>
                                     </form>
                                 </td>

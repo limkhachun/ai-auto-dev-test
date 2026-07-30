@@ -441,6 +441,11 @@ a:hover {
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
 }
 
+/* --- Tab Hidden State (extracted from inline style="display:none") --- */
+.tab-hidden {
+    display: none;
+}
+
 /* --- Order Status Badge --- */
 .order-status {
     display: inline-block;

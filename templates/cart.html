@@ -57,6 +57,7 @@
                             <td>${{ '%.2f'|format(item.price) }}</td>
                             <td>
                                 <form method="POST" action="{{ url_for('shop.update_cart') }}" class="inline-form">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                     <input type="hidden" name="product_id" value="{{ pid }}">
                                     <input type="number" name="quantity" value="{{ item.quantity }}" min="0" max="{{ item.max_stock }}" class="qty-input-sm">
                                     <button type="submit" class="btn btn-sm btn-secondary">Update</button>
@@ -65,6 +66,7 @@
                             <td>${{ '%.2f'|format(subtotal) }}</td>
                             <td>
                                 <form method="POST" action="{{ url_for('shop.remove_from_cart') }}" class="inline-form">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                     <input type="hidden" name="product_id" value="{{ pid }}">
                                     <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Remove this item?')">Remove</button>
                                 </form>
@@ -78,6 +80,7 @@
                         <td><strong>${{ '%.2f'|format(total.value) }}</strong></td>
                         <td>
                             <form method="POST" action="{{ url_for('shop.checkout') }}">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                 <button type="submit" class="btn btn-primary btn-sm" onclick="return confirm('Proceed to checkout?')">Checkout</button>
                             </form>
                         </td>

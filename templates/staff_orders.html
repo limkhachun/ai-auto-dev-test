@@ -55,6 +55,7 @@
                             <td>
                                 {% if order.status == 'paid' %}
                                     <form method="POST" action="{{ url_for('staff.ship_order', order_id=order.id) }}">
+                                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                         <button type="submit" class="btn btn-sm btn-primary" onclick="return confirm('Ship this order?')">Ship</button>
                                     </form>
                                 {% else %}
