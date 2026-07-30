@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Super Admin Dashboard{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    {% block extra_head %}{% endblock %}
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="{{ url_for('shop.index') }}" class="nav-brand">Shop</a>
+            <div class="nav-links">
+                {% if session.get('user_id') %}
+                    <a href="{{ url_for('shop.index') }}" class="nav-link">Products</a>
+                    <a href="{{ url_for('shop.cart') }}" class="nav-link">Cart</a>
+                    <a href="{{ url_for('shop.my_orders') }}" class="nav-link">My Orders</a>
+                    {% if session.get('role') in ('staff', 'superadmin') %}
+                        <a href="{{ url_for('staff.staff_dashboard') }}" class="nav-link">Staff</a>
+                    {% endif %}
+                    {% if session.get('role') == 'superadmin' %}
+                        <a href="{{ url_for('admin.admin_dashboard') }}" class="nav-link">Admin</a>
+                    {% endif %}
+                    <a href="{{ url_for('auth.logout') }}" class="nav-link">Logout ({{ session.get('username') }})</a>
+                {% else %}
+                    <a href="{{ url_for('auth.login') }}" class="nav-link">Login</a>
+                    <a href="{{ url_for('auth.register') }}" class="nav-link">Register</a>
+                {% endif %}
+            </div>
+        </div>
+    </nav>
+
+    <div class="main-container">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        {% block content %}{% endblock %}
+    </div>
+
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+    {% block extra_scripts %}{% endblock %}
+</body>
+</html>

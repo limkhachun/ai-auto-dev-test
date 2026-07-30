@@ -1,22 +1,21 @@
-# This file will just re-export models content to see error messages
+import os
+os.chdir('D:/test_ai')
 import sys
-sys.path.insert(0, 'D:/test_ai')
+sys.stdout.reconfigure(encoding='utf-8')
 
-# Read and print models.py content
-with open('D:/test_ai/models.py', 'r') as f:
-    content = f.read()
-    # Write to a new file that we can hopefully read
-    with open('D:/test_ai/_models_content.txt', 'w') as out:
-        out.write(content)
+files = [
+    'app.py', 'models.py', 'config.py', 'decorators.py', 'utils.py', 'admin.py',
+]
 
-with open('D:/test_ai/app.py', 'r') as f:
-    content = f.read()
-    with open('D:/test_ai/_app_content.txt', 'w') as out:
-        out.write(content)
-
-with open('D:/test_ai/config.py', 'r') as f:
-    content = f.read()
-    with open('D:/test_ai/_config_content.txt', 'w') as out:
-        out.write(content)
-
-print("Done")
+for f in files:
+    print(f"=== {f} ===")
+    try:
+        with open(f, 'r', encoding='utf-8') as fh:
+            print(fh.read())
+    except Exception as e:
+        try:
+            with open(f, 'r', encoding='latin-1') as fh:
+                print(fh.read())
+        except Exception as e2:
+            print(f"Error: {e2}")
+    print("---")

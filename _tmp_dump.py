@@ -1,6 +1,8 @@
-import shutil
-# Copy files to a location the read tool can access
-shutil.copy('D:/test_ai/models.py', 'D:/test_ai/_models_content.py')
-shutil.copy('D:/test_ai/app.py', 'D:/test_ai/_app_content.py')
-shutil.copy('D:/test_ai/config.py', 'D:/test_ai/_config_content.py')
-print("Copied successfully")
+import subprocess
+r = subprocess.run(['python', 'D:/test_ai/_tmp_reader.py'], capture_output=True, text=True, encoding='utf-8', errors='replace')
+with open('D:/test_ai/_tmp_output.txt', 'w', encoding='utf-8') as f:
+    f.write(r.stdout)
+    if r.stderr:
+        f.write('\n---STDERR---\n')
+        f.write(r.stderr)
+print("Done")

@@ -3,20 +3,24 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Shop</title>
+    <title>Shop - Products</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 <body>
     <nav class="navbar">
         <div class="nav-container">
-            <a href="{{ url_for('shop.index') }}" class="nav-brand">Online Store</a>
+            <a href="{{ url_for('shop.index') }}" class="nav-brand">Shop</a>
             <div class="nav-links">
-                <a href="{{ url_for('shop.index') }}" class="nav-link active">Shop</a>
-                <a href="{{ url_for('shop.cart') }}" class="nav-link">
-                    Cart <span class="cart-badge">{{ cart|length }}</span>
-                </a>
+                <a href="{{ url_for('shop.index') }}" class="nav-link active">Products</a>
+                <a href="{{ url_for('shop.cart') }}" class="nav-link">Cart</a>
                 <a href="{{ url_for('shop.my_orders') }}" class="nav-link">My Orders</a>
-                <a href="{{ url_for('auth.logout') }}" class="nav-link">Logout</a>
+                {% if session.get('role') in ('staff', 'superadmin') %}
+                    <a href="{{ url_for('staff.staff_dashboard') }}" class="nav-link">Staff</a>
+                {% endif %}
+                {% if session.get('role') == 'superadmin' %}
+                    <a href="{{ url_for('admin.admin_dashboard') }}" class="nav-link">Admin</a>
+                {% endif %}
+                <a href="{{ url_for('auth.logout') }}" class="nav-link">Logout ({{ session.get('username') }})</a>
             </div>
         </div>
     </nav>
@@ -35,35 +39,28 @@
         {% if products %}
             <div class="product-grid">
                 {% for product in products %}
-                    <div class="product-card">
-                        <div class="product-info">
-                            <h3 class="product-name">{{ product.name }}</h3>
-                            <p class="product-desc">{{ product.description or 'No description' }}</p>
-                            <p class="product-price">${{ '%.2f'|format(product.price) }}</p>
-                            <p class="product-stock">
-                                {% if product.stock > 0 %}
-                                    In Stock: {{ product.stock }}
-                                {% else %}
-                                    <span class="out-of-stock">Out of Stock</span>
-                                {% endif %}
-                            </p>
-                        </div>
+                    <div class="card product-card">
+                        <h3>{{ product.name }}</h3>
+                        <p class="product-description">{{ product.description or 'No description' }}</p>
+                        <p class="product-price">${{ '%.2f'|format(product.price) }}</p>
+                        <p class="product-stock">Stock: {{ product.stock }}</p>
                         {% if product.stock > 0 %}
                             <form method="POST" action="{{ url_for('shop.add_to_cart') }}" class="add-to-cart-form">
                                 <input type="hidden" name="product_id" value="{{ product.id }}">
-                                <div class="qty-control">
-                                    <label for="qty-{{ product.id }}">Qty:</label>
-                                    <input type="number" id="qty-{{ product.id }}" name="quantity" value="1" min="1" max="{{ product.stock }}">
+                                <div class="quantity-control">
+                                    <input type="number" name="quantity" value="1" min="1" max="{{ product.stock }}" class="qty-input">
                                 </div>
                                 <button type="submit" class="btn btn-primary btn-sm">Add to Cart</button>
                             </form>
+                        {% else %}
+                            <p class="out-of-stock">Out of Stock</p>
                         {% endif %}
                     </div>
                 {% endfor %}
             </div>
         {% else %}
             <div class="empty-state">
-                <p>No products available yet.</p>
+                <p>No products available at the moment.</p>
             </div>
         {% endif %}
     </div>

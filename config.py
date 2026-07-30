@@ -1,46 +1,41 @@
 """
-配置文件 - 应用配置项
+Configuration module for Super Admin Dashboard.
 """
 import os
 
+BASE_DIR = os.path.abspath(os.path.dirname(__file__))
+
 
 class Config:
-    """基础配置"""
-    SECRET_KEY = os.environ.get('SECRET_KEY', 'dev-secret-key-change-in-production')
-    DEBUG = False
-    TESTING = False
-    DATABASE_URI = os.environ.get('DATABASE_URI', 'sqlite:///app.db')
+    """Base configuration."""
+    SECRET_KEY = os.environ.get('SECRET_KEY', 'super-secret-key-change-in-production')
+    SQLALCHEMY_DATABASE_URI = os.environ.get(
+        'DATABASE_URL',
+        'mysql+pymysql://root:root@localhost:3306/test_ai_db'
+    )
+    SQLALCHEMY_TRACK_MODIFICATIONS = False
+    WTF_CSRF_ENABLED = True
+    MAX_CONTENT_LENGTH = 16 * 1024 * 1024  # 16 MB max upload
 
 
 class DevelopmentConfig(Config):
-    """开发环境配置"""
+    """Development configuration."""
     DEBUG = True
-    DATABASE_URI = os.environ.get('DATABASE_URI', 'sqlite:///dev.db')
 
 
 class ProductionConfig(Config):
-    """生产环境配置"""
+    """Production configuration."""
     DEBUG = False
-    DATABASE_URI = os.environ.get('DATABASE_URI', 'postgresql://user:pass@localhost/prod_db')
 
 
 class TestingConfig(Config):
-    """测试环境配置"""
+    """Testing configuration."""
     TESTING = True
-    DATABASE_URI = os.environ.get('DATABASE_URI', 'sqlite:///test.db')
+    SQLALCHEMY_DATABASE_URI = 'sqlite:///:memory:'
 
 
-config_map = {
+config_by_name = {
     'development': DevelopmentConfig,
     'production': ProductionConfig,
     'testing': TestingConfig,
-    'default': DevelopmentConfig,
 }
-
-
-def get_config(config_name=None):
-    """获取配置类"""
-    if config_name is None:
-        config_name = os.environ.get('FLASK_ENV', 'default')
-    config_class = config_map.get(config_name, config_map['default'])
-    return config_class

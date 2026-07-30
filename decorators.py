@@ -1,135 +1,35 @@
 """
-装饰器模块 - 提供通用装饰器
+Decorators for route protection: login_required and role_required.
 """
-import functools
-import logging
-import time
-
-logger = logging.getLogger(__name__)
+from functools import wraps
+from flask import session, redirect, url_for, flash
 
 
-def require_auth(f):
-    """
-    认证装饰器：检查请求是否携带有效的认证信息
-    使用示例: @require_auth
-    """
-
-    @functools.wraps(f)
-    def decorated(*args, **kwargs):
-        # 在实际应用中，这里会从 request 中提取 token/session
-        # 这里简化为从 kwargs 中检查 user 参数
-        user = kwargs.get('user')
-        if user is None:
-            raise PermissionError('Authentication required')
+def login_required(f):
+    """Require a valid user session to access the route."""
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if 'user_id' not in session:
+            flash('Please log in to access this page.', 'warning')
+            return redirect(url_for('auth.login'))
         return f(*args, **kwargs)
+    return decorated_function
 
-    return decorated
 
-
-def require_role(required_role):
+def role_required(*roles):
     """
-    角色权限装饰器：限制只有特定角色可以访问
-    使用示例: @require_role('admin')
+    Require the user to have one of the specified roles.
+    Usage: @role_required('staff', 'superadmin')
     """
-
     def decorator(f):
-        @functools.wraps(f)
-        def decorated(*args, **kwargs):
-            user = kwargs.get('user')
-            if user is None:
-                raise PermissionError('Authentication required')
-
-            # 角色层级: admin > moderator > user
-            role_hierarchy = {'admin': 3, 'moderator': 2, 'user': 1}
-            user_level = role_hierarchy.get(user.role, 0)
-            required_level = role_hierarchy.get(required_role, 0)
-
-            if user_level < required_level:
-                raise PermissionError(
-                    f'Insufficient role. Required: {required_role}, '
-                    f'got: {user.role}'
-                )
+        @wraps(f)
+        def decorated_function(*args, **kwargs):
+            if 'user_id' not in session:
+                flash('Please log in to access this page.', 'warning')
+                return redirect(url_for('auth.login'))
+            if session.get('role') not in roles:
+                flash('You do not have permission to access this page.', 'danger')
+                return redirect(url_for('shop.index'))
             return f(*args, **kwargs)
-
-        return decorated
-
-    return decorator
-
-
-def log_execution(f):
-    """
-    日志装饰器：记录函数执行时间和参数
-    使用示例: @log_execution
-    """
-
-    @functools.wraps(f)
-    def decorated(*args, **kwargs):
-        func_name = f.__name__
-        logger.debug('Starting %s with args=%s kwargs=%s',
-                     func_name, args, kwargs)
-        start_time = time.time()
-        try:
-            result = f(*args, **kwargs)
-            elapsed = time.time() - start_time
-            logger.debug('%s completed in %.3f seconds', func_name, elapsed)
-            return result
-        except Exception as e:
-            elapsed = time.time() - start_time
-            logger.error('%s failed after %.3f seconds: %s',
-                         func_name, elapsed, str(e))
-            raise
-
-    return decorated
-
-
-def validate_input(*required_fields):
-    """
-    输入验证装饰器：确保必需的参数不为空
-    使用示例: @validate_input('title', 'content')
-    """
-
-    def decorator(f):
-        @functools.wraps(f)
-        def decorated(*args, **kwargs):
-            missing = []
-            for field in required_fields:
-                value = kwargs.get(field)
-                if value is None or (isinstance(value, str) and not value.strip()):
-                    missing.append(field)
-            if missing:
-                raise ValueError(
-                    f'Missing required fields: {", ".join(missing)}'
-                )
-            return f(*args, **kwargs)
-
-        return decorated
-
-    return decorator
-
-
-def retry_on_failure(max_retries=3, delay=1.0, exceptions=(Exception,)):
-    """
-    重试装饰器：在函数抛出指定异常时自动重试
-    使用示例: @retry_on_failure(max_retries=3, delay=1.0)
-    """
-
-    def decorator(f):
-        @functools.wraps(f)
-        def decorated(*args, **kwargs):
-            last_exception = None
-            for attempt in range(1, max_retries + 1):
-                try:
-                    return f(*args, **kwargs)
-                except exceptions as e:
-                    last_exception = e
-                    logger.warning(
-                        'Attempt %d/%d failed for %s: %s',
-                        attempt, max_retries, f.__name__, str(e)
-                    )
-                    if attempt < max_retries:
-                        time.sleep(delay)
-            raise last_exception
-
-        return decorated
-
+        return decorated_function
     return decorator

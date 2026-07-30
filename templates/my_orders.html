@@ -9,12 +9,18 @@
 <body>
     <nav class="navbar">
         <div class="nav-container">
-            <a href="{{ url_for('shop.index') }}" class="nav-brand">Online Store</a>
+            <a href="{{ url_for('shop.index') }}" class="nav-brand">Shop</a>
             <div class="nav-links">
-                <a href="{{ url_for('shop.index') }}" class="nav-link">Shop</a>
+                <a href="{{ url_for('shop.index') }}" class="nav-link">Products</a>
                 <a href="{{ url_for('shop.cart') }}" class="nav-link">Cart</a>
                 <a href="{{ url_for('shop.my_orders') }}" class="nav-link active">My Orders</a>
-                <a href="{{ url_for('auth.logout') }}" class="nav-link">Logout</a>
+                {% if session.get('role') in ('staff', 'superadmin') %}
+                    <a href="{{ url_for('staff.staff_dashboard') }}" class="nav-link">Staff</a>
+                {% endif %}
+                {% if session.get('role') == 'superadmin' %}
+                    <a href="{{ url_for('admin.admin_dashboard') }}" class="nav-link">Admin</a>
+                {% endif %}
+                <a href="{{ url_for('auth.logout') }}" class="nav-link">Logout ({{ session.get('username') }})</a>
             </div>
         </div>
     </nav>
@@ -31,41 +37,29 @@
         {% endwith %}
 
         {% if orders %}
-            {% for order in orders %}
-                <div class="order-card">
-                    <div class="order-header">
-                        <span class="order-id">Order #{{ order.id }}</span>
-                        <span class="order-status status-{{ order.status }}">{{ order.status }}</span>
-                        <span class="order-date">{{ order.created_at.strftime('%Y-%m-%d %H:%M') }}</span>
-                        <span class="order-total">Total: ${{ '%.2f'|format(order.total_amount) }}</span>
-                    </div>
-                    <div class="order-items">
-                        <table class="table">
-                            <thead>
-                                <tr>
-                                    <th>Product</th>
-                                    <th>Price</th>
-                                    <th>Quantity</th>
-                                    <th>Subtotal</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for item in order.items.all() %}
-                                    <tr>
-                                        <td>{{ item.product.name if item.product else 'N/A' }}</td>
-                                        <td>${{ '%.2f'|format(item.price) }}</td>
-                                        <td>{{ item.quantity }}</td>
-                                        <td>${{ '%.2f'|format(item.price * item.quantity) }}</td>
-                                    </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            {% endfor %}
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Order ID</th>
+                        <th>Total Amount</th>
+                        <th>Status</th>
+                        <th>Date</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for order in orders %}
+                        <tr>
+                            <td>#{{ order.id }}</td>
+                            <td>${{ '%.2f'|format(order.total_amount) }}</td>
+                            <td><span class="order-status status-{{ order.status }}">{{ order.status }}</span></td>
+                            <td>{{ order.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
         {% else %}
             <div class="empty-state">
-                <p>You haven't placed any orders yet.</p>
+                <p>You have no orders yet.</p>
                 <a href="{{ url_for('shop.index') }}" class="btn btn-primary">Start Shopping</a>
             </div>
         {% endif %}

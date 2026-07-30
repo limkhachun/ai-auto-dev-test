@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order Detail</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="{{ url_for('shop.index') }}" class="nav-brand">Shop</a>
+            <div class="nav-links">
+                <a href="{{ url_for('shop.index') }}" class="nav-link">Products</a>
+                <a href="{{ url_for('shop.cart') }}" class="nav-link">Cart</a>
+                <a href="{{ url_for('shop.my_orders') }}" class="nav-link">My Orders</a>
+                <a href="{{ url_for('auth.logout') }}" class="nav-link">Logout</a>
+            </div>
+        </div>
+    </nav>
+    <div class="main-container">
+        <h1 class="page-title">Order Detail</h1>
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+        <div class="card">
+            <p>View your order details from the "My Orders" page.</p>
+            <a href="{{ url_for('shop.my_orders') }}" class="btn btn-primary">My Orders</a>
+        </div>
+    </div>
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+</body>
+</html>

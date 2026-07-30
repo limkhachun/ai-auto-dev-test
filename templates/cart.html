@@ -9,12 +9,18 @@
 <body>
     <nav class="navbar">
         <div class="nav-container">
-            <a href="{{ url_for('shop.index') }}" class="nav-brand">Online Store</a>
+            <a href="{{ url_for('shop.index') }}" class="nav-brand">Shop</a>
             <div class="nav-links">
-                <a href="{{ url_for('shop.index') }}" class="nav-link">Shop</a>
+                <a href="{{ url_for('shop.index') }}" class="nav-link">Products</a>
                 <a href="{{ url_for('shop.cart') }}" class="nav-link active">Cart</a>
                 <a href="{{ url_for('shop.my_orders') }}" class="nav-link">My Orders</a>
-                <a href="{{ url_for('auth.logout') }}" class="nav-link">Logout</a>
+                {% if session.get('role') in ('staff', 'superadmin') %}
+                    <a href="{{ url_for('staff.staff_dashboard') }}" class="nav-link">Staff</a>
+                {% endif %}
+                {% if session.get('role') == 'superadmin' %}
+                    <a href="{{ url_for('admin.admin_dashboard') }}" class="nav-link">Admin</a>
+                {% endif %}
+                <a href="{{ url_for('auth.logout') }}" class="nav-link">Logout ({{ session.get('username') }})</a>
             </div>
         </div>
     </nav>
@@ -30,30 +36,33 @@
             {% endif %}
         {% endwith %}
 
-        {% if cart %}
-            <table class="table cart-table">
+        {% if cart and cart|length > 0 %}
+            <table class="table">
                 <thead>
                     <tr>
                         <th>Product</th>
                         <th>Price</th>
                         <th>Quantity</th>
                         <th>Subtotal</th>
-                        <th>Action</th>
+                        <th>Actions</th>
                     </tr>
                 </thead>
                 <tbody>
+                    {% set total = namespace(value=0) %}
                     {% for pid, item in cart.items() %}
+                        {% set subtotal = item.price * item.quantity %}
+                        {% set total.value = total.value + subtotal %}
                         <tr>
                             <td>{{ item.name }}</td>
                             <td>${{ '%.2f'|format(item.price) }}</td>
                             <td>
                                 <form method="POST" action="{{ url_for('shop.update_cart') }}" class="inline-form">
                                     <input type="hidden" name="product_id" value="{{ pid }}">
-                                    <input type="number" name="quantity" value="{{ item.quantity }}" min="0" max="{{ item.max_stock }}" class="qty-input">
+                                    <input type="number" name="quantity" value="{{ item.quantity }}" min="0" max="{{ item.max_stock }}" class="qty-input-sm">
                                     <button type="submit" class="btn btn-sm btn-secondary">Update</button>
                                 </form>
                             </td>
-                            <td>${{ '%.2f'|format(item.price * item.quantity) }}</td>
+                            <td>${{ '%.2f'|format(subtotal) }}</td>
                             <td>
                                 <form method="POST" action="{{ url_for('shop.remove_from_cart') }}" class="inline-form">
                                     <input type="hidden" name="product_id" value="{{ pid }}">
@@ -65,20 +74,20 @@
                 </tbody>
                 <tfoot>
                     <tr>
-                        <td colspan="3" class="text-right"><strong>Total:</strong></td>
-                        <td><strong>${{ '%.2f'|format(total) }}</strong></td>
-                        <td></td>
+                        <td colspan="3"><strong>Total</strong></td>
+                        <td><strong>${{ '%.2f'|format(total.value) }}</strong></td>
+                        <td>
+                            <form method="POST" action="{{ url_for('shop.checkout') }}">
+                                <button type="submit" class="btn btn-primary btn-sm" onclick="return confirm('Proceed to checkout?')">Checkout</button>
+                            </form>
+                        </td>
                     </tr>
                 </tfoot>
             </table>
-
-            <form method="POST" action="{{ url_for('shop.checkout') }}" class="checkout-form">
-                <button type="submit" class="btn btn-primary btn-lg" onclick="return confirm('Proceed to checkout?')">Place Order & Pay</button>
-            </form>
         {% else %}
             <div class="empty-state">
                 <p>Your cart is empty.</p>
-                <a href="{{ url_for('shop.index') }}" class="btn btn-primary">Continue Shopping</a>
+                <a href="{{ url_for('shop.index') }}" class="btn btn-primary">Browse Products</a>
             </div>
         {% endif %}
     </div>

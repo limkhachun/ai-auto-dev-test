@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>403 - Forbidden</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="{{ url_for('auth.login') }}" class="nav-brand">Super Admin Dashboard</a>
+            <div class="nav-links">
+                <a href="{{ url_for('auth.login') }}" class="nav-link">Login</a>
+                <a href="{{ url_for('auth.register') }}" class="nav-link">Register</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="main-container">
+        <div class="error-container">
+            <h1 class="error-code">403</h1>
+            <h2 class="error-title">Access Forbidden</h2>
+            <p class="error-description">You do not have permission to access this page.</p>
+            <a href="{{ url_for('auth.login') }}" class="btn btn-primary">Go to Home</a>
+        </div>
+    </div>
+</body>
+</html>

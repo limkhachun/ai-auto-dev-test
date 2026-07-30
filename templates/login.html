@@ -3,49 +3,55 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Log In</title>
+    <title>Login</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 <body>
-    <div class="container">
-        <div class="auth-card">
-            <h2>Log In</h2>
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="{{ url_for('auth.login') }}" class="nav-brand">Super Admin Dashboard</a>
+            <div class="nav-links">
+                <a href="{{ url_for('auth.login') }}" class="nav-link active">Login</a>
+                <a href="{{ url_for('auth.register') }}" class="nav-link">Register</a>
+            </div>
+        </div>
+    </nav>
 
-            <!-- Tab Switch -->
-            <div class="tab-switch">
+    <div class="main-container login-container">
+        <h1 class="page-title">Login</h1>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <div class="card login-card">
+            <div class="tab-bar">
                 <button class="tab-btn active" data-tab="user" onclick="switchTab('user')">User Login</button>
-                <button class="tab-btn" data-tab="staff" onclick="switchTab('staff')">Staff/Admin Login</button>
+                <button class="tab-btn" data-tab="staff" onclick="switchTab('staff')">Staff Login</button>
             </div>
 
-            {% with messages = get_flashed_messages(with_categories=true) %}
-                {% if messages %}
-                    {% for category, message in messages %}
-                        <div class="alert alert-{{ category }}">{{ message }}</div>
-                    {% endfor %}
-                {% endif %}
-            {% endwith %}
-
             <form method="POST" action="{{ url_for('auth.login') }}">
-                <input type="hidden" id="login_type" name="login_type" value="user">
+                <input type="hidden" name="login_type" id="login_type" value="user">
 
                 <div class="form-group">
                     <label for="username">Username or Email</label>
-                    <input type="text" id="username" name="username"
-                           placeholder="Enter your username or email" required>
+                    <input type="text" id="username" name="username" placeholder="Enter username or email" required>
                 </div>
 
                 <div class="form-group">
                     <label for="password">Password</label>
-                    <input type="password" id="password" name="password"
-                           placeholder="Enter your password" required>
+                    <input type="password" id="password" name="password" placeholder="Enter password" required>
                 </div>
 
-                <button type="submit" class="btn btn-primary">Log In</button>
+                <button type="submit" class="btn btn-primary btn-block">Login</button>
             </form>
 
-            <p class="auth-link">
-                Don't have an account?
-                <a href="{{ url_for('auth.register') }}">Register</a>
+            <p class="text-center mt-2">
+                Don't have an account? <a href="{{ url_for('auth.register') }}">Register here</a>.
             </p>
         </div>
     </div>

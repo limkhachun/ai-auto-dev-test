@@ -12,15 +12,18 @@
             <a href="{{ url_for('admin.admin_dashboard') }}" class="nav-brand">Admin Panel</a>
             <div class="nav-links">
                 <a href="{{ url_for('admin.admin_dashboard') }}" class="nav-link">Dashboard</a>
-                <a href="{{ url_for('admin.all_orders') }}" class="nav-link active">All Orders</a>
-                <a href="{{ url_for('admin.audit_logs') }}" class="nav-link">Audit Logs</a>
-                <a href="{{ url_for('auth.logout') }}" class="nav-link">Logout</a>
+                <a href="{{ url_for('admin.admin_orders') }}" class="nav-link active">All Orders</a>
+                {% if session.get('role') in ('staff', 'superadmin') %}
+                    <a href="{{ url_for('staff.staff_dashboard') }}" class="nav-link">Staff Panel</a>
+                {% endif %}
+                <a href="{{ url_for('shop.index') }}" class="nav-link">Shop</a>
+                <a href="{{ url_for('auth.logout') }}" class="nav-link">Logout ({{ session.get('username') }})</a>
             </div>
         </div>
     </nav>
 
     <div class="main-container">
-        <h1 class="page-title">All Orders (Global)</h1>
+        <h1 class="page-title">All Orders</h1>
 
         {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
@@ -39,6 +42,7 @@
                         <th>Total Amount</th>
                         <th>Status</th>
                         <th>Date</th>
+                        <th>Action</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -49,6 +53,15 @@
                             <td>${{ '%.2f'|format(order.total_amount) }}</td>
                             <td><span class="order-status status-{{ order.status }}">{{ order.status }}</span></td>
                             <td>{{ order.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                            <td>
+                                {% if order.status == 'paid' %}
+                                    <form method="POST" action="{{ url_for('admin.ship_order', order_id=order.id) }}">
+                                        <button type="submit" class="btn btn-sm btn-primary" onclick="return confirm('Ship this order?')">Ship</button>
+                                    </form>
+                                {% else %}
+                                    <span class="text-muted">-</span>
+                                {% endif %}
+                            </td>
                         </tr>
                     {% endfor %}
                 </tbody>
